@@ -38,3 +38,12 @@
 
 
   )
+
+(defn get-api-ninjas-api-key []
+  (get-in (config) [:clients :api-ninjas :api-key]))
+
+(comment
+
+  (get-api-ninjas-api-key)
+  
+  )

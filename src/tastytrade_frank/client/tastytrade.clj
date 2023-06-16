@@ -1,12 +1,14 @@
-(ns tastytrade-frank.client
+(ns tastytrade-frank.client.tastytrade
   (:require [clojure.tools.logging :as log]
             [clj-http.client :as http]
-            [cheshire.core :as json]
-            [tastytrade-frank.config :as config]))
+            #_[cheshire.core :as json]
+            [options-formulae-clj.core :as options-formulae]
+            [tastytrade-frank.config :as config]
+            [tastytrade-frank.client.helper :as client-helper]))
 
 
-(defn- assoc-body-data [resp]
-  (assoc resp :body-data (json/parse-string (:body resp) true)))
+;; (defn- assoc-body-data [resp]
+;;   (assoc resp :body-data (json/parse-string (:body resp) true)))
 
 (defn- create-session []
   (let [payload {:login (config/get-username)
@@ -14,7 +16,7 @@
                  :remember-me true}
         resp (-> (http/post (str (config/get-api-host) "/sessions")
                               {:form-params payload})
-                 assoc-body-data)]
+                 client-helper/assoc-body-data)]
     resp))
 
 
@@ -113,6 +115,11 @@
 
   (get-option-chains "AMZN")
 
+  (let [chains (get-option-chains "AMZN")
+        $ (-> (get-in chains [:body-data :data :items])
+              count)]
+    $)
+
   )
 
 (defn get-equity-option [symbol]
@@ -132,3 +139,23 @@
   (symbol-search "AMZN")
 
   )
+
+(defn option->volatility [{:keys [option-type
+                                  days-to-expiration]
+                           strike-price-str :strike-price
+                           :as option}]
+  (let [
+        call-or-put (case option-type
+                      "C" :call
+                      "P" :put
+                      (throw (ex-info "invalid :option-type" {:option-type
+                                                              option-type})))
+        time-to-expiry-in-yrs (/ days-to-expiration 365.25)
+        strike-price (Double/parseDouble strike-price-str)
+        volatility (options-formulae/find-volatility
+                    target-value
+                    call-or-put
+                    underlying-price
+                    strike-price
+                    time-to-expiry-in-yrs
+                    risk-free-rate)]))

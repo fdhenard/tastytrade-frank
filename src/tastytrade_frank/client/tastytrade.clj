@@ -2,7 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [clj-http.client :as http]
             #_[cheshire.core :as json]
-            [options-formulae-clj.core :as options-formulae]
+            #_[options-formulae-clj.core :as options-formulae]
             [tastytrade-frank.config :as config]
             [tastytrade-frank.client.helper :as client-helper]))
 
@@ -46,7 +46,7 @@
 (defn- tasty [http-fn uri]
   (let [resp (-> (http-fn (str (config/get-api-host) uri)
                           {:headers {"Authorization" (get-session-token)}})
-                 assoc-body-data)]
+                 client-helper/assoc-body-data)]
     resp))
 
 (defn get-positions []
@@ -140,22 +140,22 @@
 
   )
 
-(defn option->volatility [{:keys [option-type
-                                  days-to-expiration]
-                           strike-price-str :strike-price
-                           :as option}]
-  (let [
-        call-or-put (case option-type
-                      "C" :call
-                      "P" :put
-                      (throw (ex-info "invalid :option-type" {:option-type
-                                                              option-type})))
-        time-to-expiry-in-yrs (/ days-to-expiration 365.25)
-        strike-price (Double/parseDouble strike-price-str)
-        volatility (options-formulae/find-volatility
-                    target-value
-                    call-or-put
-                    underlying-price
-                    strike-price
-                    time-to-expiry-in-yrs
-                    risk-free-rate)]))
+;; (defn option->volatility [{:keys [option-type
+;;                                   days-to-expiration]
+;;                            strike-price-str :strike-price
+;;                            :as option}]
+;;   (let [
+;;         call-or-put (case option-type
+;;                       "C" :call
+;;                       "P" :put
+;;                       (throw (ex-info "invalid :option-type" {:option-type
+;;                                                               option-type})))
+;;         time-to-expiry-in-yrs (/ days-to-expiration 365.25)
+;;         strike-price (Double/parseDouble strike-price-str)
+;;         volatility (options-formulae/find-volatility
+;;                     target-value
+;;                     call-or-put
+;;                     underlying-price
+;;                     strike-price
+;;                     time-to-expiry-in-yrs
+;;                     risk-free-rate)]))

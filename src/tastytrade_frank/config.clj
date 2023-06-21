@@ -47,3 +47,12 @@
   (get-api-ninjas-api-key)
   
   )
+
+(defn get-polygon-api-key []
+  (get-in (config) [:clients :polygon :api-key]))
+
+(comment
+
+  (get-polygon-api-key)
+
+  )
